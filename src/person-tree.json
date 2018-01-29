@@ -1,0 +1,68 @@
+{
+    "name": "Dan Kr",
+    "picture": "krasivo.svg",
+    "targetsLength": 5,
+    "targets": [
+        {
+            "name": "testTarget",
+            "generalProgress": 0.3,
+            "remainingTime": 1,
+            "description": "I think, it's awesome target."
+        }, {
+            "name": "testTarget #2",
+            "generalProgress": 0.7,
+            "remainingTime": 3,
+            "description": "It's also awesome target."
+        }, {
+            "name": "testTarget №3",
+            "generalProgress": 0.5,
+            "remainingTime": 2,
+            "description": "Just something awesome."
+        }, {
+            "name": "testTarget_4",
+            "generalProgress": 0.1,
+            "remainingTime": 3,
+            "description": "Awesome."
+        }, {
+            "name": "testTarget-5",
+            "generalProgress": 0.9,
+            "remainingTime": 999,
+            "description": "Asm."
+        }
+    ],
+    "groupsLength": 2,
+    "groups": [
+        {
+            "name": "English Group",
+            "picture": "koroleva_britanii.jpeg",
+            "targetsLength": 0,
+            "targets" : [],
+            "groupsLength": 0,
+            "groups" : []
+        },
+        {
+            "name": "Katalonia",
+            "picture": "freedom.png",
+            "targetsLength": 0,
+            "targets" : [],
+            "groupsLength": 1,
+            "groups" : [
+                {
+                    "name": "Life Sence",
+                    "picture": "not-found.bmp",
+                    "targetsLength": 1,
+                    "targets" : [
+                        {
+                            "name": "goddamnTarget",
+                            "generalProgress": 0.3,
+                            "remainingTime": 1,
+                            "description": "How u dare?!"
+                        }
+                    ],
+                    "groupsLength": 0,
+                    "groups" : []
+                }
+            ]
+        }
+    ]
+}
