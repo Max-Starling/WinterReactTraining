@@ -395,17 +395,15 @@ class TargetDetail extends TargetPreview {
 }
 
 const p = new Person('Alen Stone');
-const t = new TargetDetail('testTarget', 0.3, 1, "It's awesome target.");
 
 p.setAvatar = "src/resources/images/logo.svg";
 
-p.addTarget(t);
-// console.log(p.getTargets);
+p.addTarget(new TargetDetail('testTarget', 0.3, 1, "It's awesome target."));
 
 var mainStage = new Konva.Stage({
   container: 'stage2',
-  width: window.innerWidth,
-  height: 500,
+  width: 2000,
+  height: 2000,
 });
 
 
@@ -413,13 +411,13 @@ function createPerson({ positionX, positionY, name, avatar }) {
   const personGroup = new Konva.Group({
     x: positionX,
     y: positionY,
-    draggable: true,
+    // draggable: true, //false 
   });
 
   const personCardText = new Konva.Text({
     text: `${name}\n${avatar}`, 
     fontSize: 18,
-    fontFamily: 'Cambria',
+    fontFamily: 'Cambria', //Purisa
     fill: '#555',
     width: 300,
     padding: 20,
@@ -466,7 +464,7 @@ function createTarget({ positionX,
     align: 'center'
   });
 
-  const targetBackground = new Konva.Circle({
+  const targetCardBackground = new Konva.Circle({
     x: 0,
     y: 0,
     stroke: 'f7f7f7',
@@ -480,44 +478,69 @@ function createTarget({ positionX,
     shadowOpacity: 0.5,
   });
   
-  targetGroup.add(targetBackground);
+  // const targetPhantomText = new Konva.Text({
+  //   x: targetCardText.getHeight() - 70,
+  //   y: -50,
+  //   text: `${name}\n${genetalProgress}\n${remainingTime}\n${description}`, 
+  //   fontSize: 18,
+  //   fontFamily: 'Cambria',
+  //   fill: '#555',
+  //   width: 300,
+  //   padding: 20,
+  //   align: 'center',
+  //   opacity: 0.5,
+  // });
+
+  // const targetPhantomBackground = new Konva.Circle({
+  //   x: targetCardText.getHeight() + 80,
+  //   y: 0,
+  //   stroke: 'f7f7f7',
+  //   strokeWidth: 0.07,
+  //   fill: '#f7f7f7',
+  //   // radius: 40,
+  //   height: targetCardText.getHeight() + 70,
+  //   shadowColor: 'black',
+  //   shadowBlur: 5,
+  //   shadowOffset: {x : 2, y : 2},
+  //   shadowOpacity: 0.5,
+  //   opacity: 0.5,
+  // });
+
+  // targetPhantomText.hide();
+  // targetPhantomBackground.hide();
+
+  // targetCardText.on('mouseleave', function() {
+  //   targetPhantomText.hide();
+  //   targetPhantomBackground.hide();
+  // });
+
+  // targetCardText.on('mouseover', function() {
+  //   targetPhantomText.show();
+  //   targetPhantomBackground.show();
+  // });
+
+  targetGroup.add(targetCardBackground);
   targetGroup.add(targetCardText);
+  // targetGroup.add(targetPhantomText);
+  // targetGroup.add(targetPhantomBackground);
 
   return targetGroup;
 }
+
 var personLayer = new Konva.Layer();
 
+console.log(mainStage.getHeight());
+console.log(mainStage.getWidth());
+
 personLayer.add(createPerson({
-  positionX: stage.getHeight() / 2,
-  positionY: 5,
+  positionX: mainStage.getWidth() / 2,
+  positionY: mainStage.getHeight() / 4,
   name: p.getName, 
   avatar: p.getAvatar,
 }));
 
-const Dan = createPerson({
-  positionX: stage.getHeight() / 2 + 400,
-  positionY: 5,
-  name: 'Dan KR', 
-  avatar: 'krasivo.svg',
-});
-
-
 const targetLayer = new Konva.Layer();
-
-const targetDan = createTarget({
-  positionX: stage.getHeight() / 2,
-  positionY: 100,
-  name: t.getName,
-  remainingTime: t.getRemainingTime,
-  genetalProgress: t.getGeneralProgress,
-  description: t.getDescription,
-});
-// console.log(tar);
-
-
-
 const lineLayer = new Konva.Layer();
-
 
 function drawLine(coordX, coordY, viewX, viewY) {
   const linkLine = new Konva.Line({
@@ -531,50 +554,75 @@ function drawLine(coordX, coordY, viewX, viewY) {
   lineLayer.add(linkLine);
 }
 
-console.log(targetDan, targetDan.y, Dan, Dan.y);
-drawLine(targetDan.attrs.x, targetDan.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100);
-
-
-targetDan.on('xChange', (event) => {
-  lineLayer.find('.link-line')[0].attrs.points = [targetDan.attrs.x, targetDan.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
-  mainStage.add(lineLayer);
-  mainStage.add(personLayer);
-  mainStage.add(targetLayer);
-  // layer.find('.link-line')[1].attrs.points = [targetDan.attrs.x, targetDan.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
-});
-
-Dan.on('xChange', (event) => {
-  lineLayer.find('.link-line')[0].attrs.points = [targetDan.attrs.x, targetDan.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
-  mainStage.add(lineLayer);
-  mainStage.add(personLayer);
-  mainStage.add(targetLayer);
-  // layer.find('.link-line')[1].attrs.points = [targetDan.attrs.x, targetDan.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
+const Dan = createPerson({
+  positionX: mainStage.getHeight() / 2 + 400,
+  positionY: 5,
+  name: 'Dan KR', 
+  avatar: 'krasivo.svg',
 });
 
 personLayer.add(Dan);
-targetLayer.add(targetDan);
+
+p.addTarget(new TargetDetail('testTarget2', 0.4, 3, "It's awesome target 2."));
+p.addTarget(new TargetDetail('testTarget3', 0.5, 2, "It's awesome target 3."));
+
+p.addTarget(new TargetDetail('testTarget4', 0.5, 2, "It's awesome target 4."));
+p.addTarget(new TargetDetail('testTarget5', 0.5, 2, "It's awesome target 5."));
+p.addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
+p.addTarget(new TargetDetail('testTarget7', 0.5, 2, "It's awesome target 7."));
+
+// p.addTarget(new TargetDetail('testTarget4', 0.5, 2, "It's awesome target 4."));
+// p.addTarget(new TargetDetail('testTarget5', 0.5, 2, "It's awesome target 5."));
+// p.addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
+// p.addTarget(new TargetDetail('testTarget7', 0.5, 2, "It's awesome target 7."));
+
+// p.addTarget(new TargetDetail('testTarget4', 0.5, 2, "It's awesome target 4."));
+// p.addTarget(new TargetDetail('testTarget5', 0.5, 2, "It's awesome target 5."));
+// p.addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
+// p.addTarget(new TargetDetail('testTarget7', 0.5, 2, "It's awesome target 7."));
+
+const gp = new Konva.Group();
+gp.draggable = 'true';
+gp.add(Dan);
+
+let delta = 0;
+p.getTargets.forEach((item, i) => {
+  if (i !== 0 && i % 2 !== 0) {
+    delta += 200;
+  }
+  console.log(Math.pow(-1, i) * delta);
+  var itemTarget = createTarget({
+    positionX: Dan.attrs.x + 150 + Math.pow(-1, i) * delta,
+    positionY: Dan.attrs.y + 300 + 10 * p.getTargets.length,
+    name: item.getName,
+    remainingTime: item.getRemainingTime,
+    genetalProgress: item.getGeneralProgress,
+    description: item.getDescription,
+  });
+  drawLine(itemTarget.attrs.x, itemTarget.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100);
+  itemTarget.on('xChange', (event) => {
+    lineLayer.find('.link-line')[i].attrs.points = [itemTarget.attrs.x, itemTarget.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
+    mainStage.add(lineLayer);
+    mainStage.add(personLayer);
+    mainStage.add(targetLayer);
+  });
+  Dan.on('xChange', (event) => {
+    lineLayer.find('.link-line')[i].attrs.points = [itemTarget.attrs.x, itemTarget.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
+    mainStage.add(lineLayer);
+    mainStage.add(personLayer);
+    mainStage.add(targetLayer);
+  });
+  personLayer.add(Dan);
+  targetLayer.add(itemTarget);
+});
+
+
+gp.on('mouseover')
+const gpLayer = new Konva.Layer();
+gpLayer.add(gp);
+
+mainStage.add(gpLayer);
 
 mainStage.add(lineLayer);
 mainStage.add(personLayer);
 mainStage.add(targetLayer);
-
-
-
-// var imageObj = new Image();
-// imageObj.onload = function() {
-//   console.log('qq');
-//   var yoda = new Konva.Image({
-//     x: 50,
-//     y: 50,
-//     image: imageObj,
-//     width: 106,
-//     height: 118
-//   });
-
-//   // add the shape to the layer
-//   personLayer.add(yoda);
-
-//   // add the layer to the stage
-//   stage.add(personLayer);
-// };
-// imageObj.src = "./resources/images/header.png";
