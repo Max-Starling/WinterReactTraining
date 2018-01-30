@@ -128,26 +128,55 @@ const jsonPerson = JSON.parse(`{
 console.log(jsonPerson);
 
 //итераторы, мэпы, алгоритм на дереве буквами и цифрами, генераторы, конкатенация строк
-const pathArray = [
 
-];
 function parsePersonToClass(jsonPerson, exemplarPerson) {
-  const rec = function inRec(obj) {
-      Object.keys(obj).forEach((key) => {
+  const rec = function inRec(obj, type) {
+      // obj.pathArray = [];
+      Object.keys(obj).forEach((key, index) => {
         // console.log(obj[key] instanceof Array);
+        if(key !== 'pathArray') {
         if (obj[key] instanceof Array) {
-          obj[key].forEach((item, index) => {
+          obj[key].forEach((item, i) => {
+
+            if (obj.pathArray) { // && obj.pathArray.length
+              console.log('Copy parrant path array in child path array');
+              item.pathArray = [...obj.pathArray];
+            } else {
+              console.log('Create path array');
+              item.pathArray = [];
+            } 
+
+            if(item.pathArray) {
+              if(!(obj in item.pathArray)) {
+                console.log('Push child in child path array');
+                console.log('child obj', obj[key]);
+                  // item.pathArray.push(item);
+                  item.pathArray.push(`${key}${i}`);
+                console.log("path array:", item.pathArray);
+              }
+            }
+            console.log(obj, key.toUpperCase(), item);
+            console.log(`
+
+            `);
+
             if (key === "targets") {
+              // type = "targets";
               exemplarPerson.addTarget(new TargetDetail(item.name, item.generalProgress, item.remainingTime, item.description));
-            }
-            if (key === "groups") {
+
+              // inRec(item, "targets");
+            } 
+            else if (key === "groups") {
               exemplarPerson.addGroup(new Entity(item.name, item.picture));
-            }
-            console.log(key.toUpperCase(), item);
-            inRec(item);
+              // inRec(item, "groups");
+            } 
+            // else {
+            //   inRec(item);
+            // }
+            inRec(item, key);
           });
           
-        }
+        } }
       });
   }
   rec(jsonPerson);
