@@ -86,7 +86,14 @@ const jsonPerson = JSON.parse(`{
       {
           "name": "Katalonia",
           "picture": "freedom.png",
-          "goals" : [],
+          "goals" : [
+            {
+              "name": "Break Away Goal",
+              "generalProgress": 0.9,
+              "remainingTime": 25,
+              "description": "Now or never. All or nothing."
+            }
+          ],
           "groups" : [
               {
                   "name": "Life Sence",
@@ -109,10 +116,8 @@ const jsonPerson = JSON.parse(`{
 function parseJsonToClass(jsonPerson, exemplarPerson) {
   (function recursiveTraversal(parentNode, type) {
       Object.keys(parentNode).forEach((key) => {
-        // consider only keys in json (all keys except path array)
-        if(key !== 'pathArray') {
-          // consider only arrays (goals and groups)
-          if (parentNode[key] instanceof Array) {
+          // consider only array keys exept path array (only goals and groups)
+          if (parentNode[key] instanceof Array && key !== 'pathArray') {
             parentNode[key].forEach((item, i) => {
               // copy parent path array or create new path array if it's doesn't exist
               if (parentNode.pathArray) { 
@@ -121,16 +126,13 @@ function parseJsonToClass(jsonPerson, exemplarPerson) {
                 item.pathArray = [];
               } 
               // push string information in path array
-              if(item.pathArray) {
-                item.pathArray.push(`${key}${'_'}${i}`);
-              }
+              item.pathArray.push(`${key}${'_'}${i}`);
               // add node to the exemplar
               addNode(exemplarPerson, key, item, item.pathArray.slice(0, -1));
               // consider child as parent and repeat
               recursiveTraversal(item, key);
             });
           } 
-        }
       });
   })(jsonPerson);
 }
@@ -150,6 +152,47 @@ function addNode(exemplar, type, node, slicedPathArray) {
       exemplar.addGroup(new Entity(node.name, node.picture));
     }
   } 
+}
+
+function drawClass(exemplar) {
+  (function recursiveTraversal(parentNode, type) {
+    Object.keys(parentNode).forEach((key) => {
+      // consider only array keys exept path array (only goals and groups)
+      if (parentNode[key] instanceof Array && key !== 'pathArray') {
+        parentNode[key].forEach((item, i) => {
+          // copy parent path array or create new path array if it's doesn't exist
+          if (parentNode.pathArray) { 
+            item.pathArray = [...parentNode.pathArray];
+          } else {
+            item.pathArray = [];
+          } 
+          // push string information in path array
+          if(item.pathArray) {
+            item.pathArray.push(`${key}${'_'}${i}`);
+          }
+          // add node to the exemplar
+          drawNodeChilds(exemplar, key, item, item.pathArray.slice(0, -1)) 
+          // consider child as parent and repeat
+          recursiveTraversal(item, key);
+        });
+      } 
+    });
+  })(exemplar);
+  }
+// }
+
+function drawNodeChilds(exemplar, type, node, slicedPathArray) {
+  if (slicedPathArray.length) {
+    switch(type) {
+      case 'goals': 
+      drawGoals(exemplar.execute(slicedPathArray), 300);
+      break;
+      case 'groups':
+      drawGroups(exemplar.execute(slicedPathArray), 450);
+      break;
+      default: break;
+    }
+  }
 }
 
 /* --------- CLASSES --------- */
@@ -315,7 +358,7 @@ function createEntity({ positionX, positionY, name, picture }) {
   return EntityGroup;
 }
 
-/* --------- CREATE TARGET --------- */
+/* --------- CREATE GOAL --------- */
 function createGoal({ 
                         positionX, 
                         positionY, 
@@ -326,7 +369,7 @@ function createGoal({
   const targetGroup = new Konva.Group({
     x: positionX,
     y: positionY,
-    // draggable: true,
+    draggable: true,
   });
   const targetCardText = new Konva.Text({
     x: -150,
@@ -388,55 +431,54 @@ function drawLine(coordX, coordY, viewX, viewY) {
   lineLayer.add(linkLine);
 }
 
-/* --------- DRAWNING TARGETS --------- */
-function drawGroups(root, offsetY) { 
+/* --------- DRAWNING GOALS --------- */
+function drawGroups(node, offsetY) { 
   let deltaGroups = 0;
-  if (root.getGroups.length) {
-    root.getGroups.forEach((item, i) => {
+  if (node.getGroups.length) {
+    node.getGroups.forEach((item, i) => {
       if (i !== 0 && i % 2 !== 0) {
         deltaGroups += 400;
       }
       const itemGroup = createEntity({
-        positionX: root.getEntity.attrs.x + 150 + Math.pow(-1, i) * deltaGroups,
-        positionY: root.getEntity.attrs.y + offsetY + 10 * root.getGroups.length,
+        positionX: node.getEntity.attrs.x + 150 + Math.pow(-1, i) * deltaGroups,
+        positionY: node.getEntity.attrs.y + offsetY + 10 * node.getGroups.length,
         name: item.getName, 
         picture: item.getAvatar,
       });
       item.setEntity = itemGroup;
-      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 100, root.getEntity.attrs.x + 150, root.getEntity.attrs.y + 100);
+      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 100, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
       groupLayer.add(itemGroup);
     });
   }
 }
-drawGroups(person, 500);
-drawGroups(person.getGroups[1], 250);
+drawGroups(person, 400);
 
-/* --------- DRAWNING TARGETS --------- */
-function drawGoals(root, offsetY) { 
+/* --------- DRAWNING GOALS --------- */
+function drawGoals(node, offsetY) { 
   let deltaGoals = 0;
-  if (root.getGoals.length) {
-    root.getGoals.forEach((item, i) => {
+  if (node.getGoals.length) {
+    node.getGoals.forEach((item, i) => {
       if (i !== 0 && i % 2 !== 0) {
         deltaGoals += 200;
       }
       // console.log(Math.pow(-1, i) * deltaGoals);
       var itemGoal = createGoal({
-        positionX: root.getEntity.attrs.x + 150 + Math.pow(-1, i) * deltaGoals,
-        positionY: root.getEntity.attrs.y + offsetY + 10 * root.getGoals.length,
+        positionX: node.getEntity.attrs.x + 150 + Math.pow(-1, i) * deltaGoals,
+        positionY: node.getEntity.attrs.y + offsetY + 10 * node.getGoals.length,
         name: item.getName,
         remainingTime: item.getRemainingTime,
         generalProgress: item.getGeneralProgress,
         description: item.getDescription,
       });
       item.setEntity = itemGoal;
-      drawLine(itemGoal.attrs.x, itemGoal.attrs.y, root.getEntity.attrs.x + 150, root.getEntity.attrs.y + 100);
-      // personLayer.add(root.getEntity);
+      drawLine(itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
+      // personLayer.add(node.getEntity);
       targetLayer.add(itemGoal);
     });
   }
 }
-drawGoals(person, 300);
-drawGoals(person.getGroups[1].getGroups[0], 300);
+drawGoals(person, 250);
+drawClass(person);
 
 /* --------- DISPLAYING ON STAGE --------- */
 mainStage.add(lineLayer);
