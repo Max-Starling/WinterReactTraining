@@ -139,20 +139,23 @@ function parsePersonToClass(jsonPerson, exemplarPerson) {
           obj[key].forEach((item, i) => {
 
             if (obj.pathArray) { // && obj.pathArray.length
-              console.log('Copy parrant path array in child path array');
+              // console.log('Copy parrant path array in child path array');
               item.pathArray = [...obj.pathArray];
             } else {
-              console.log('Create path array');
+              // console.log('Create path array');
               item.pathArray = [];
             } 
 
             if(item.pathArray) {
               if(!(obj in item.pathArray)) {
-                console.log('Push child in child path array');
-                console.log('child obj', obj[key]);
+                // console.log('Push child in child path array');
+                // console.log('child obj', obj[key]);
                   // item.pathArray.push(item);
-                  item.pathArray.push(`${key}${i}`);
+                  item.pathArray.push(`${key}${'_'}${i}`);
                 console.log("path array:", item.pathArray);
+                item.pathArray.forEach(() => {
+                  console
+                });
               }
             }
             console.log(obj, key.toUpperCase(), item);
@@ -163,11 +166,13 @@ function parsePersonToClass(jsonPerson, exemplarPerson) {
             if (key === "targets") {
               // type = "targets";
               exemplarPerson.addTarget(new TargetDetail(item.name, item.generalProgress, item.remainingTime, item.description));
-
+              // console.log("path array:", exemplarPerson.execute(item.pathArray.slice(0, -1)));
+              // exemplarPerson.execute(item.pathArray.slice(0, -1)).addTarget(new TargetDetail(item.name, item.generalProgress, item.remainingTime, item.description));
               // inRec(item, "targets");
             } 
             else if (key === "groups") {
               exemplarPerson.addGroup(new Entity(item.name, item.picture));
+              // console.log("path array:11111111111", exemplarPerson.execute(item.pathArray));
               // inRec(item, "groups");
             } 
             // else {
@@ -239,6 +244,21 @@ class Entity {
       this.groups.push(g);
     }
   }
+  execute(pathArray) {
+    // console.log(this);
+    let obj = this;
+    pathArray.forEach((item, i) => {
+      const [type, index] = [item.split('_')[0], item.split('_')[1]];
+      // const index =  item.split('_')[1];
+      // console.log(type, index);
+      switch (type) {
+        case 'groups': obj = obj.getGroups[index]; break;
+        case 'targets': obj = obj.getTargets[index]; break;
+      }
+    });
+    // console.log(obj);
+    return obj;
+  }
 }
 
 class TargetPreview {
@@ -306,9 +326,10 @@ parsePersonToClass(jsonPerson, person);
 // person.addGroup(new Entity('Katalonia', 'freedom.png'));
 
 // person.addGroup(new Entity('Life Sense', 'not-found.bmp'));
-
-person.getGroups[1].addGroup(new Entity('Life Sense', 'not-found.bmp'));
-person.getGroups[1].getGroups[0].addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
+person.execute(['groups_1']).addGroup(new Entity('Life Sense', 'not-found.bmp'));
+// person.getGroups[1].addGroup(new Entity('Life Sense', 'not-found.bmp'));
+person.execute(['groups_1', 'groups_0']).addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
+// person.execute(['groups_1', 'groups_0', 'groups_0', 'groups_0', 'groups_0', 'groups_0', 'groups_0', 'groups_0']).addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
 
 /* --------- STAGE --------- */
 var mainStage = new Konva.Stage({
