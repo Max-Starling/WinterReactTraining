@@ -127,7 +127,10 @@ const jsonPerson = JSON.parse(`{
 
 console.log(jsonPerson);
 
+//итераторы, мэпы, алгоритм на дереве буквами и цифрами, генераторы, конкатенация строк
+const pathArray = [
 
+];
 function parsePersonToClass(jsonPerson, exemplarPerson) {
   const rec = function inRec(obj) {
       Object.keys(obj).forEach((key) => {
@@ -135,10 +138,10 @@ function parsePersonToClass(jsonPerson, exemplarPerson) {
         if (obj[key] instanceof Array) {
           obj[key].forEach((item, index) => {
             if (key === "targets") {
-
+              exemplarPerson.addTarget(new TargetDetail(item.name, item.generalProgress, item.remainingTime, item.description));
             }
             if (key === "groups") {
-
+              exemplarPerson.addGroup(new Entity(item.name, item.picture));
             }
             console.log(key.toUpperCase(), item);
             inRec(item);
@@ -262,16 +265,19 @@ const person = new Entity('Dan KR', 'krasivo.svg');
 parsePersonToClass(jsonPerson, person);
 
 // person.setAvatar = "src/resources/images/logo.svg";
-person.addTarget(new TargetDetail('testTarget', 0.3, 1, "It's awesome target."));
-person.addTarget(new TargetDetail('testTarget2', 0.4, 3, "It's awesome target 2."));
-person.addTarget(new TargetDetail('testTarget3', 0.5, 2, "It's awesome target 3."));
-person.addTarget(new TargetDetail('testTarget4', 0.5, 2, "It's awesome target 4."));
-person.addTarget(new TargetDetail('testTarget5', 0.5, 2, "It's awesome target 5."));
+// person.addTarget(new TargetDetail('testTarget', 0.3, 1, "It's awesome target."));
+// person.addTarget(new TargetDetail('testTarget2', 0.4, 3, "It's awesome target 2."));
+// person.addTarget(new TargetDetail('testTarget3', 0.5, 2, "It's awesome target 3."));
+// person.addTarget(new TargetDetail('testTarget4', 0.5, 2, "It's awesome target 4."));
+// person.addTarget(new TargetDetail('testTarget5', 0.5, 2, "It's awesome target 5."));
 // person.addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
 // person.addTarget(new TargetDetail('testTarget7', 0.5, 2, "It's awesome target 7.It's awesome target 7."));
-person.addGroup(new Entity('English Group', 'koroleva_britanii.jpeg'));
-person.addGroup(new Entity('Katalonia', 'freedom.png'));
+
+// person.addGroup(new Entity('English Group', 'koroleva_britanii.jpeg'));
+// person.addGroup(new Entity('Katalonia', 'freedom.png'));
+
 // person.addGroup(new Entity('Life Sense', 'not-found.bmp'));
+
 person.getGroups[1].addGroup(new Entity('Life Sense', 'not-found.bmp'));
 person.getGroups[1].getGroups[0].addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
 
@@ -321,7 +327,7 @@ function createTarget({
                         positionX, 
                         positionY, 
                         name, 
-                        genetalProgress, 
+                        generalProgress, 
                         remainingTime, 
                         description }) {
   const targetGroup = new Konva.Group({
@@ -332,7 +338,7 @@ function createTarget({
   const targetCardText = new Konva.Text({
     x: -150,
     y: -50,
-    text: `${name}\n${genetalProgress}\n${remainingTime}\n${description}`, 
+    text: `${name}\n${generalProgress}\n${remainingTime}\n${description}`, 
     fontSize: 18,
     fontFamily: 'Cambria',
     fill: '#555',
@@ -428,7 +434,7 @@ function drawTargets(root, offsetY) {
         positionY: root.getEntity.attrs.y + offsetY + 10 * root.getTargets.length,
         name: item.getName,
         remainingTime: item.getRemainingTime,
-        genetalProgress: item.getGeneralProgress,
+        generalProgress: item.getGeneralProgress,
         description: item.getDescription,
       });
       item.setEntity = itemTarget;
