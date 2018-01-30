@@ -53,12 +53,12 @@ const jsonPerson = JSON.parse(`{
           "name": "testGoal",
           "generalProgress": 0.3,
           "remainingTime": 1,
-          "description": "It's awesome target."
+          "description": "It's awesome goal."
       }, {
           "name": "testGoal #2",
           "generalProgress": 0.7,
           "remainingTime": 3,
-          "description": "It's also awesome target."
+          "description": "It's also awesome goal."
       }, {
           "name": "testGoal №3",
           "generalProgress": 0.5,
@@ -98,14 +98,34 @@ const jsonPerson = JSON.parse(`{
               {
                   "name": "Life Sence",
                   "picture": "not-found.bmp",
-                  "goals" : [
-                      {
-                          "name": "goddamnGoal",
-                          "generalProgress": 0.3,
-                          "remainingTime": 1,
-                          "description": "How u dare?!"
-                      }
-                  ],
+                  "goals": [
+                    {
+                        "name": "testGoal",
+                        "generalProgress": 0.3,
+                        "remainingTime": 1,
+                        "description": "It's awesome goal."
+                    }, {
+                        "name": "testGoal #2",
+                        "generalProgress": 0.7,
+                        "remainingTime": 3,
+                        "description": "It's also awesome goal."
+                    }, {
+                        "name": "testGoal №3",
+                        "generalProgress": 0.5,
+                        "remainingTime": 2,
+                        "description": "It's just something awesome."
+                    }, {
+                        "name": "testGoal_4",
+                        "generalProgress": 0.1,
+                        "remainingTime": 3,
+                        "description": "Awesome."
+                    }, {
+                      "name": "testGoal-5",
+                      "generalProgress": 0.9,
+                      "remainingTime": 999,
+                      "description": "Asm."
+                  }
+                ],
                   "groups" : []
               }
           ]
@@ -171,7 +191,7 @@ function drawClass(exemplar) {
             item.pathArray.push(`${key}${'_'}${i}`);
           }
           // add node to the exemplar
-          drawNodeChilds(exemplar, key, item, item.pathArray.slice(0, -1)) 
+          drawNodeChilds(exemplar, key, item, parentNode, item.pathArray.slice(0, -1));
           // consider child as parent and repeat
           recursiveTraversal(item, key);
         });
@@ -181,16 +201,23 @@ function drawClass(exemplar) {
   }
 // }
 
-function drawNodeChilds(exemplar, type, node, slicedPathArray) {
+function drawNodeChilds(exemplar, type, node, parentNode, slicedPathArray) {
   if (slicedPathArray.length) {
     switch(type) {
       case 'goals': 
-      drawGoals(exemplar.execute(slicedPathArray), 300);
-      break;
+        if (!parentNode.isGoalsDrawn) {
+          drawGoals(exemplar.execute(slicedPathArray), 300);
+          parentNode.isGoalsDrawn = true;
+        }
+        break;
       case 'groups':
-      drawGroups(exemplar.execute(slicedPathArray), 450);
-      break;
-      default: break;
+        if (!parentNode.isGroupsDrawn) {
+          drawGroups(exemplar.execute(slicedPathArray), 450);
+          parentNode.isGroupsDrawn = true;
+        }
+        break;
+      default: 
+        break;
     }
   }
 }
@@ -326,13 +353,13 @@ var mainStage = new Konva.Stage({
 
 /* --------- CREATE ENTITY --------- */
 function createEntity({ positionX, positionY, name, picture }) {
-  const EntityGroup = new Konva.Group({
+  const entityGroup = new Konva.Group({
     x: positionX,
-    y: positionY,
-    // draggable: true, //false 
+    y: positionY + 50,
+    // draggable: true
   });
 
-  const EntityCardText = new Konva.Text({
+  const entityCardText = new Konva.Text({
     text: `${name}\n${picture}`, 
     fontSize: 18,
     fontFamily: 'Cambria', //Purisa
@@ -342,20 +369,23 @@ function createEntity({ positionX, positionY, name, picture }) {
     align: 'center'
   });
   
-  const EntityCardBackground = new Konva.Rect({
-    stroke: 'f7f7f7',
-    strokeWidth: 0.15,
-    fill: '#f7f7f7',
-    width: 300,
-    height: EntityCardText.getHeight() + 100,
-    shadowColor: 'black',
-    shadowBlur: 5,
-    shadowOffset: {x : 2, y : 2},
-    shadowOpacity: 0.5,
-  });
-  EntityGroup.add(EntityCardBackground);
-  EntityGroup.add(EntityCardText);
-  return EntityGroup;
+  const entityCardBackground = new Konva.Circle({
+      x: 150,
+      y: 50,
+      stroke: 'f7f7f7',
+      strokeWidth: 0.07,
+      fill: '#f7f7f7',
+      // radius: 40,
+      height: entityCardText.getHeight() + 70,
+      shadowColor: 'black',
+      shadowBlur: 5,
+      shadowOffset: {x : 2, y : 2},
+      shadowOpacity: 0.5,
+    });
+
+  entityGroup.add(entityCardBackground);
+  entityGroup.add(entityCardText);
+  return entityGroup;
 }
 
 /* --------- CREATE GOAL --------- */
@@ -366,12 +396,12 @@ function createGoal({
                         generalProgress, 
                         remainingTime, 
                         description }) {
-  const targetGroup = new Konva.Group({
+  const goalGroup = new Konva.Group({
     x: positionX,
     y: positionY,
-    draggable: true,
+    // draggable: true,
   });
-  const targetCardText = new Konva.Text({
+  const goalCardText = new Konva.Text({
     x: -150,
     y: -50,
     text: `${name}\n${generalProgress}\n${remainingTime}\n${description}`, 
@@ -382,29 +412,29 @@ function createGoal({
     padding: 20,
     align: 'center'
   });
-  const targetCardBackground = new Konva.Circle({
-    x: 0,
-    y: 0,
+
+  const goalCardBackground = new Konva.Rect({
+    x: -150,
+    y: -50,
     stroke: 'f7f7f7',
-    strokeWidth: 0.07,
+    strokeWidth: 0.15,
     fill: '#f7f7f7',
-    // radius: 40,
-    height: targetCardText.getHeight() + 70,
+    width: 300,
+    height: goalCardText.getHeight() + 10,
     shadowColor: 'black',
     shadowBlur: 5,
     shadowOffset: {x : 2, y : 2},
     shadowOpacity: 0.5,
   });
-
-  targetGroup.add(targetCardBackground);
-  targetGroup.add(targetCardText);
-  return targetGroup;
+  goalGroup.add(goalCardBackground);
+  goalGroup.add(goalCardText);
+  return goalGroup;
 }
 
 /* --------- LAYERS --------- */
 const personLayer = new Konva.Layer();
 const groupLayer = new Konva.Layer();
-const targetLayer = new Konva.Layer();
+const goalLayer = new Konva.Layer();
 const lineLayer = new Konva.Layer();
 
 /* --------- PERSON ENTITY --------- */
@@ -446,7 +476,7 @@ function drawGroups(node, offsetY) {
         picture: item.getAvatar,
       });
       item.setEntity = itemGroup;
-      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 100, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
+      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 50, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
       groupLayer.add(itemGroup);
     });
   }
@@ -459,7 +489,7 @@ function drawGoals(node, offsetY) {
   if (node.getGoals.length) {
     node.getGoals.forEach((item, i) => {
       if (i !== 0 && i % 2 !== 0) {
-        deltaGoals += 200;
+        deltaGoals += 400;
       }
       // console.log(Math.pow(-1, i) * deltaGoals);
       var itemGoal = createGoal({
@@ -473,7 +503,7 @@ function drawGoals(node, offsetY) {
       item.setEntity = itemGoal;
       drawLine(itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
       // personLayer.add(node.getEntity);
-      targetLayer.add(itemGoal);
+      goalLayer.add(itemGoal);
     });
   }
 }
@@ -484,7 +514,7 @@ drawClass(person);
 mainStage.add(lineLayer);
 mainStage.add(personLayer);
 mainStage.add(groupLayer);
-mainStage.add(targetLayer);
+mainStage.add(goalLayer);
 
 
 /* --------- DRAG & DROP --------- */
@@ -493,11 +523,11 @@ mainStage.add(targetLayer);
   //   lineLayer.find('.link-line')[i].attrs.points = [itemGoal.attrs.x, itemGoal.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
   //   mainStage.add(lineLayer);
   //   mainStage.add(personLayer);
-  //   mainStage.add(targetLayer);
+  //   mainStage.add(goalLayer);
   // });
   // Dan.on('xChange', (event) => {
   //   lineLayer.find('.link-line')[i].attrs.points = [itemGoal.attrs.x, itemGoal.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
   //   mainStage.add(lineLayer);
   //   mainStage.add(personLayer);
-  //   mainStage.add(targetLayer);
+  //   mainStage.add(goalLayer);
   // });
