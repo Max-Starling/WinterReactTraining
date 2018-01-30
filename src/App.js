@@ -13,25 +13,6 @@ import Footer from "./components/Footer/Footer.js";
 import "./App.scss";
 
 class App extends Component {
-  // state = {
-  //   response: ''
-  // };
-
-  // componentDidMount() {
-  //   this.callApi()
-  //     .then(res => this.setState({ response: res.express }))
-  //     .catch(err => console.log(err));
-  // }
-
-  // callApi = async () => {
-  //   const response = await fetch('/api/hello');
-  //   const body = await response.json();
-
-  //   if (response.status !== 200) throw Error(body.message);
-
-  //   return body;
-  // };
-
   render() {
     return (
       <Router>
@@ -67,29 +48,29 @@ export default App;
 const jsonPerson = JSON.parse(`{
   "name": "Dan Kr",
   "picture": "krasivo.svg",
-  "targets": [
+  "goals": [
       {
-          "name": "testTarget",
+          "name": "testGoal",
           "generalProgress": 0.3,
           "remainingTime": 1,
           "description": "It's awesome target."
       }, {
-          "name": "testTarget #2",
+          "name": "testGoal #2",
           "generalProgress": 0.7,
           "remainingTime": 3,
           "description": "It's also awesome target."
       }, {
-          "name": "testTarget №3",
+          "name": "testGoal №3",
           "generalProgress": 0.5,
           "remainingTime": 2,
           "description": "It's just something awesome."
       }, {
-          "name": "testTarget_4",
+          "name": "testGoal_4",
           "generalProgress": 0.1,
           "remainingTime": 3,
           "description": "Awesome."
       }, {
-        "name": "testTarget-5",
+        "name": "testGoal-5",
         "generalProgress": 0.9,
         "remainingTime": 999,
         "description": "Asm."
@@ -99,20 +80,20 @@ const jsonPerson = JSON.parse(`{
       {
           "name": "English Group",
           "picture": "koroleva_britanii.jpeg",
-          "targets" : [],
+          "goals" : [],
           "groups" : []
       },
       {
           "name": "Katalonia",
           "picture": "freedom.png",
-          "targets" : [],
+          "goals" : [],
           "groups" : [
               {
                   "name": "Life Sence",
                   "picture": "not-found.bmp",
-                  "targets" : [
+                  "goals" : [
                       {
-                          "name": "goddamnTarget",
+                          "name": "goddamnGoal",
                           "generalProgress": 0.3,
                           "remainingTime": 1,
                           "description": "How u dare?!"
@@ -125,74 +106,58 @@ const jsonPerson = JSON.parse(`{
   ]
 }`);
 
-console.log(jsonPerson);
-
-//итераторы, мэпы, алгоритм на дереве буквами и цифрами, генераторы, конкатенация строк
-
-function parsePersonToClass(jsonPerson, exemplarPerson) {
-  const rec = function inRec(obj, type) {
-      // obj.pathArray = [];
-      Object.keys(obj).forEach((key, index) => {
-        // console.log(obj[key] instanceof Array);
+function parseJsonToClass(jsonPerson, exemplarPerson) {
+  (function recursiveTraversal(parentNode, type) {
+      Object.keys(parentNode).forEach((key) => {
+        // consider only keys in json (all keys except path array)
         if(key !== 'pathArray') {
-        if (obj[key] instanceof Array) {
-          obj[key].forEach((item, i) => {
-
-            if (obj.pathArray) { // && obj.pathArray.length
-              // console.log('Copy parrant path array in child path array');
-              item.pathArray = [...obj.pathArray];
-            } else {
-              // console.log('Create path array');
-              item.pathArray = [];
-            } 
-
-            if(item.pathArray) {
-              if(!(obj in item.pathArray)) {
-                // console.log('Push child in child path array');
-                // console.log('child obj', obj[key]);
-                  // item.pathArray.push(item);
-                  item.pathArray.push(`${key}${'_'}${i}`);
-                console.log("path array:", item.pathArray);
-                item.pathArray.forEach(() => {
-                  console
-                });
+          // consider only arrays (goals and groups)
+          if (parentNode[key] instanceof Array) {
+            parentNode[key].forEach((item, i) => {
+              // copy parent path array or create new path array if it's doesn't exist
+              if (parentNode.pathArray) { 
+                item.pathArray = [...parentNode.pathArray];
+              } else {
+                item.pathArray = [];
+              } 
+              // push string information in path array
+              if(item.pathArray) {
+                item.pathArray.push(`${key}${'_'}${i}`);
               }
-            }
-            console.log(obj, key.toUpperCase(), item);
-            console.log(`
-
-            `);
-
-            if (key === "targets") {
-              // type = "targets";
-              exemplarPerson.addTarget(new TargetDetail(item.name, item.generalProgress, item.remainingTime, item.description));
-              // console.log("path array:", exemplarPerson.execute(item.pathArray.slice(0, -1)));
-              // exemplarPerson.execute(item.pathArray.slice(0, -1)).addTarget(new TargetDetail(item.name, item.generalProgress, item.remainingTime, item.description));
-              // inRec(item, "targets");
-            } 
-            else if (key === "groups") {
-              exemplarPerson.addGroup(new Entity(item.name, item.picture));
-              // console.log("path array:11111111111", exemplarPerson.execute(item.pathArray));
-              // inRec(item, "groups");
-            } 
-            // else {
-            //   inRec(item);
-            // }
-            inRec(item, key);
-          });
-          
-        } }
+              // add node to the exemplar
+              addNode(exemplarPerson, key, item, item.pathArray.slice(0, -1));
+              // consider child as parent and repeat
+              recursiveTraversal(item, key);
+            });
+          } 
+        }
       });
-  }
-  rec(jsonPerson);
+  })(jsonPerson);
+}
+
+function addNode(exemplar, type, node, slicedPathArray) {
+  if (type === "goals") {
+    if (slicedPathArray.length) {
+      exemplar.execute(slicedPathArray).addGoal(new GoalDetail(node.name, node.generalProgress, node.remainingTime, node.description)); 
+    } else {
+      exemplar.addGoal(new GoalDetail(node.name, node.generalProgress, node.remainingTime, node.description)); 
+    }
+  } 
+  else if (type === "groups") {
+    if (slicedPathArray.length) {
+      exemplar.execute(slicedPathArray).addGroup(new Entity(node.name, node.picture));
+    } else {
+      exemplar.addGroup(new Entity(node.name, node.picture));
+    }
+  } 
 }
 
 /* --------- CLASSES --------- */
 class Entity {
-  constructor(fullName, url, targets, groups) {
+  constructor(fullName, url, goals, groups) {
     this.name = fullName || "Unknown";
     this.picture = url || "default picture";
-    this.targets = targets || [];
+    this.goals = goals || [];
     this.groups = groups || [];
     this.entity = null;
   }
@@ -212,12 +177,12 @@ class Entity {
       this.picture = a;
     }
   }
-  get getTargets() {
-    return this.targets;
+  get getGoals() {
+    return this.goals;
   }
-  set setTargets(t) {
+  set setGoals(t) {
     if(t) {
-      this.targets = t;
+      this.goals = t;
     }
   }
   get getGroups() {
@@ -236,8 +201,8 @@ class Entity {
   get getEntity() {
     return this.entity;
   }
-  addTarget(t) {
-    this.targets.push(t);
+  addGoal(t) {
+    this.goals.push(t);
   }
   addGroup(g) {
     if(g) {
@@ -245,25 +210,22 @@ class Entity {
     }
   }
   execute(pathArray) {
-    // console.log(this);
     let obj = this;
     pathArray.forEach((item, i) => {
       const [type, index] = [item.split('_')[0], item.split('_')[1]];
-      // const index =  item.split('_')[1];
-      // console.log(type, index);
       switch (type) {
         case 'groups': obj = obj.getGroups[index]; break;
-        case 'targets': obj = obj.getTargets[index]; break;
+        case 'goals': obj = obj.getGoals[index]; break;
+        default: break;
       }
     });
-    // console.log(obj);
     return obj;
   }
 }
 
-class TargetPreview {
+class GoalPreview {
   constructor(name, generalProgress, remainingTime) {
-    this.name = name || "Target";
+    this.name = name || "Goal";
     this.generalProgress = Number(generalProgress) || 0;
     this.remainingTime = Number(remainingTime) || 24;
   }
@@ -293,7 +255,7 @@ class TargetPreview {
   }
 }
 
-class TargetDetail extends TargetPreview {
+class GoalDetail extends GoalPreview {
   constructor(name, generalProgress, remainingTime, description) {
     super(name, generalProgress,remainingTime);
     this.description = description || "Description";
@@ -310,26 +272,7 @@ class TargetDetail extends TargetPreview {
 
 /* --------- OBJECTS OF CLASSES --------- */
 const person = new Entity('Dan KR', 'krasivo.svg');
-
-parsePersonToClass(jsonPerson, person);
-
-// person.setAvatar = "src/resources/images/logo.svg";
-// person.addTarget(new TargetDetail('testTarget', 0.3, 1, "It's awesome target."));
-// person.addTarget(new TargetDetail('testTarget2', 0.4, 3, "It's awesome target 2."));
-// person.addTarget(new TargetDetail('testTarget3', 0.5, 2, "It's awesome target 3."));
-// person.addTarget(new TargetDetail('testTarget4', 0.5, 2, "It's awesome target 4."));
-// person.addTarget(new TargetDetail('testTarget5', 0.5, 2, "It's awesome target 5."));
-// person.addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
-// person.addTarget(new TargetDetail('testTarget7', 0.5, 2, "It's awesome target 7.It's awesome target 7."));
-
-// person.addGroup(new Entity('English Group', 'koroleva_britanii.jpeg'));
-// person.addGroup(new Entity('Katalonia', 'freedom.png'));
-
-// person.addGroup(new Entity('Life Sense', 'not-found.bmp'));
-person.execute(['groups_1']).addGroup(new Entity('Life Sense', 'not-found.bmp'));
-// person.getGroups[1].addGroup(new Entity('Life Sense', 'not-found.bmp'));
-person.execute(['groups_1', 'groups_0']).addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
-// person.execute(['groups_1', 'groups_0', 'groups_0', 'groups_0', 'groups_0', 'groups_0', 'groups_0', 'groups_0']).addTarget(new TargetDetail('testTarget6', 0.5, 2, "It's awesome target 6."));
+parseJsonToClass(jsonPerson, person);
 
 /* --------- STAGE --------- */
 var mainStage = new Konva.Stage({
@@ -373,7 +316,7 @@ function createEntity({ positionX, positionY, name, picture }) {
 }
 
 /* --------- CREATE TARGET --------- */
-function createTarget({ 
+function createGoal({ 
                         positionX, 
                         positionY, 
                         name, 
@@ -415,23 +358,22 @@ function createTarget({
   return targetGroup;
 }
 
-/* --------- PERSON ENTITY --------- */
-const Dan = createEntity({
-  positionX: mainStage.getWidth() / 2 -150,
-  positionY: 5,
-  name: person.getName, 
-  picture: person.getAvatar,
-});
-
-person.setEntity = Dan;
-
 /* --------- LAYERS --------- */
 const personLayer = new Konva.Layer();
 const groupLayer = new Konva.Layer();
 const targetLayer = new Konva.Layer();
 const lineLayer = new Konva.Layer();
 
-personLayer.add(Dan);
+/* --------- PERSON ENTITY --------- */
+const personEntity = createEntity({
+  positionX: mainStage.getWidth() / 2 -150,
+  positionY: 5,
+  name: person.getName, 
+  picture: person.getAvatar,
+});
+
+person.setEntity = personEntity;
+personLayer.add(personEntity);
 
 /* --------- DRAWNING LINES --------- */
 function drawLine(coordX, coordY, viewX, viewY) {
@@ -461,7 +403,6 @@ function drawGroups(root, offsetY) {
         picture: item.getAvatar,
       });
       item.setEntity = itemGroup;
-      // console.log(root, item);
       drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 100, root.getEntity.attrs.x + 150, root.getEntity.attrs.y + 100);
       groupLayer.add(itemGroup);
     });
@@ -471,31 +412,31 @@ drawGroups(person, 500);
 drawGroups(person.getGroups[1], 250);
 
 /* --------- DRAWNING TARGETS --------- */
-function drawTargets(root, offsetY) { 
-  let deltaTargets = 0;
-  if (root.getTargets.length) {
-    root.getTargets.forEach((item, i) => {
+function drawGoals(root, offsetY) { 
+  let deltaGoals = 0;
+  if (root.getGoals.length) {
+    root.getGoals.forEach((item, i) => {
       if (i !== 0 && i % 2 !== 0) {
-        deltaTargets += 200;
+        deltaGoals += 200;
       }
-      // console.log(Math.pow(-1, i) * deltaTargets);
-      var itemTarget = createTarget({
-        positionX: root.getEntity.attrs.x + 150 + Math.pow(-1, i) * deltaTargets,
-        positionY: root.getEntity.attrs.y + offsetY + 10 * root.getTargets.length,
+      // console.log(Math.pow(-1, i) * deltaGoals);
+      var itemGoal = createGoal({
+        positionX: root.getEntity.attrs.x + 150 + Math.pow(-1, i) * deltaGoals,
+        positionY: root.getEntity.attrs.y + offsetY + 10 * root.getGoals.length,
         name: item.getName,
         remainingTime: item.getRemainingTime,
         generalProgress: item.getGeneralProgress,
         description: item.getDescription,
       });
-      item.setEntity = itemTarget;
-      drawLine(itemTarget.attrs.x, itemTarget.attrs.y, root.getEntity.attrs.x + 150, root.getEntity.attrs.y + 100);
+      item.setEntity = itemGoal;
+      drawLine(itemGoal.attrs.x, itemGoal.attrs.y, root.getEntity.attrs.x + 150, root.getEntity.attrs.y + 100);
       // personLayer.add(root.getEntity);
-      targetLayer.add(itemTarget);
+      targetLayer.add(itemGoal);
     });
   }
 }
-drawTargets(person, 300);
-drawTargets(person.getGroups[1].getGroups[0], 300);
+drawGoals(person, 300);
+drawGoals(person.getGroups[1].getGroups[0], 300);
 
 /* --------- DISPLAYING ON STAGE --------- */
 mainStage.add(lineLayer);
@@ -506,14 +447,14 @@ mainStage.add(targetLayer);
 
 /* --------- DRAG & DROP --------- */
 
-  // itemTarget.on('xChange', (event) => {
-  //   lineLayer.find('.link-line')[i].attrs.points = [itemTarget.attrs.x, itemTarget.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
+  // itemGoal.on('xChange', (event) => {
+  //   lineLayer.find('.link-line')[i].attrs.points = [itemGoal.attrs.x, itemGoal.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
   //   mainStage.add(lineLayer);
   //   mainStage.add(personLayer);
   //   mainStage.add(targetLayer);
   // });
   // Dan.on('xChange', (event) => {
-  //   lineLayer.find('.link-line')[i].attrs.points = [itemTarget.attrs.x, itemTarget.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
+  //   lineLayer.find('.link-line')[i].attrs.points = [itemGoal.attrs.x, itemGoal.attrs.y, Dan.attrs.x + 150, Dan.attrs.y + 100];
   //   mainStage.add(lineLayer);
   //   mainStage.add(personLayer);
   //   mainStage.add(targetLayer);
