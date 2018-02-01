@@ -121,7 +121,21 @@ const jsonPerson = JSON.parse(`{
                       "remainingTime": 5
                   }
                 ],
-                  "groups" : []
+                  "groups" : [ 
+                    {
+                    "name": "Katalonia",
+                    "picture": "freedom.png",
+                    "goals" : [
+                      {
+                        "name": "Break Away Goal",
+                        "generalProgress": 0.9,
+                        "remainingTime": 25,
+                        "description": "Now or never. All or nothing."
+                      }
+                    ],
+                    "groups" : []
+                  }
+                ]
               }
           ]
       }
@@ -159,16 +173,20 @@ function parseJsonToClass(jsonPerson, exemplarPerson) {
 function addNode(exemplar, type, node, slicedPathArray) {
   if (type === "goals") {
     if (slicedPathArray.length) {
-      exemplar.execute(slicedPathArray).addGoal(new GoalDetail(node.name, node.generalProgress, node.remainingTime, node.description)); 
+      exemplar.execute(slicedPathArray).addGoal(new GoalDetail(node.name, node.generalProgress, node.remainingTime, node.description));
+      exemplar.execute(slicedPathArray).setGoalsLength =  exemplar.execute(slicedPathArray).getGoalsLength + 1;
     } else {
-      exemplar.addGoal(new GoalDetail(node.name, node.generalProgress, node.remainingTime, node.description)); 
+      exemplar.addGoal(new GoalDetail(node.name, node.generalProgress, node.remainingTime, node.description));
+      exemplar.setGoalsLength =  exemplar.getGoalsLength + 1; 
     }
   } 
   else if (type === "groups") {
     if (slicedPathArray.length) {
       exemplar.execute(slicedPathArray).addGroup(new Entity(node.name, node.picture));
+      exemplar.execute(slicedPathArray).setGroupsLength =  exemplar.execute(slicedPathArray).getGroupsLength + 1;
     } else {
       exemplar.addGroup(new Entity(node.name, node.picture));
+      exemplar.setGroupsLength =  exemplar.getGroupsLength + 1; 
     }
   } 
 }
@@ -197,21 +215,20 @@ function drawClass(exemplar) {
       } 
     });
   })(exemplar);
-  }
-// }
+}
 
 function drawNodeChilds(exemplar, type, node, parentNode, slicedPathArray) {
   if (slicedPathArray.length) {
     switch(type) {
       case 'goals': 
         if (!parentNode.isGoalsDrawn) {
-          drawGoals(exemplar.execute(slicedPathArray), 300);
+          drawGoals(exemplar.execute(slicedPathArray), 350, 300);
           parentNode.isGoalsDrawn = true;
         }
         break;
       case 'groups':
         if (!parentNode.isGroupsDrawn) {
-          drawGroups(exemplar.execute(slicedPathArray), 450);
+          drawGroups(exemplar.execute(slicedPathArray), 350, 300);
           parentNode.isGroupsDrawn = true;
         }
         break;
@@ -227,7 +244,9 @@ class Entity {
     this.name = fullName || "Unknown";
     this.picture = url || "default picture";
     this.goals = goals || [];
+    this.goalsLength = 0;
     this.groups = groups || [];
+    this.groupsLength = 0;
     this.entity = null;
   }
   get getName() {
@@ -269,6 +288,25 @@ class Entity {
   }
   get getEntity() {
     return this.entity;
+  }
+  set setGroupsLength(length) {
+    if (length) {
+      this.groupsLength = length;
+    }
+  }
+  get getGroupsLength() {
+    return this.groupsLength;
+  }
+  set setGoalsLength(length) {
+    if (length) {
+      this.goalsLength = length;
+    }
+  }
+  get getGoalsLength() {
+    return this.goalsLength;
+  }
+  getGeneralLength() {
+    return this.goalsLength + this.groupsLength;
   }
   addGoal(t) {
     this.goals.push(t);
@@ -342,19 +380,24 @@ class GoalDetail extends GoalPreview {
 /* --------- OBJECTS OF CLASSES --------- */
 const person = new Entity('Dan Kr', 'krasivo.svg');
 parseJsonToClass(jsonPerson, person);
+console.log(person);
 
+// document.querySelector('#main-stage').style.width = window.innerWidth + 'px';
+// document.querySelector('#main-stage').style.height = window.innerHeight - 100;
+document.querySelector('#main-stage').style.overflowX = 'scroll';
+document.querySelector('#main-stage').style.overflowY = 'scroll';
 /* --------- STAGE --------- */
 var mainStage = new Konva.Stage({
   container: 'main-stage',
-  width: 3000,
-  height: 2000,
+  width: 6000,
+  height: 1400,
 });
 
 /* --------- CREATE ENTITY --------- */
 function createEntity({ positionX, positionY, name, picture }) {
   const entityGroup = new Konva.Group({
-    x: positionX,
-    y: positionY + 50,
+    x: positionX - 300,
+    y: positionY,
     // draggable: true
   });
   // let firstLetters = '';
@@ -515,40 +558,37 @@ function drawLine(coordX, coordY, viewX, viewY, strokeWidth = 1) {
 }
 
 /* --------- DRAWNING GROUPS --------- */
-function drawGroups(node, offsetY) { 
-  let deltaGroups = 0;
+function drawGroups(node, offsetX, offsetY) { 
   if (node.getGroups.length) {
-    node.getGroups.forEach((item, i) => {
-      if (i !== 0 && i % 2 !== 0) {
-        deltaGroups += 400;
-      }
+    node.getGroups.forEach((item, index) => {
+      const startX = node.getEntity.attrs.x + (-1) * (node.getGeneralLength() / 2 - 1) * offsetX;
+      let currentX =  startX + (node.getGoalsLength + 1 + index) * offsetX;
+      const currentY = node.getEntity.attrs.y + offsetY;
       const itemGroup = createEntity({
-        positionX: node.getEntity.attrs.x + 150 + Math.pow(-1, i) * deltaGroups,
-        positionY: node.getEntity.attrs.y + offsetY + 10 * node.getGroups.length,
+        positionX: currentX,
+        positionY: currentY,
         name: item.getName, 
         picture: item.getAvatar,
       });
       item.setEntity = itemGroup;
-      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 50, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100, 2);
+      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 100, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
       groupLayer.add(itemGroup);
     });
   }
 }
-drawGroups(person, 400);
+drawGroups(person, 350, 250);
 // personLayer.add(personEntity);
 
 /* --------- DRAWNING GOALS --------- */
-function drawGoals(node, offsetY) { 
-  let deltaGoals = 0;
+function drawGoals(node, offsetX, offsetY) { 
   if (node.getGoals.length) {
-    node.getGoals.forEach((item, i) => {
-      if (i !== 0 && i % 2 !== 0) {
-        deltaGoals += 400;
-      }
-      // console.log(Math.pow(-1, i) * deltaGoals);
+    node.getGoals.forEach((item, index) => {
+      const startX = node.getEntity.attrs.x + (-1) * (node.getGeneralLength() / 2 - 1) * offsetX;
+      let currentX =  startX + index * offsetX;
+      const currentY = node.getEntity.attrs.y + offsetY;
       var itemGoal = createGoal({
-        positionX: node.getEntity.attrs.x + 150 + Math.pow(-1, i) * deltaGoals,
-        positionY: node.getEntity.attrs.y + offsetY + 10 * node.getGoals.length,
+        positionX: currentX,
+        positionY: currentY,
         name: item.getName,
         remainingTime: item.getRemainingTime,
         generalProgress: item.getGeneralProgress,
@@ -556,15 +596,15 @@ function drawGoals(node, offsetY) {
       });
       item.setEntity = itemGoal;
       const line = drawLine(itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
-      itemGoal.on('xChange', (event) => {
-        line.attrs.points = [itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100];
-        lineLayer.draw();
-      });
+      // itemGoal.on('xChange', (event) => {
+      //   line.attrs.points = [itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100];
+      //   lineLayer.draw();
+      // });
       goalLayer.add(itemGoal);
     });
   }
 }
-drawGoals(person, 250);
+drawGoals(person, 350, 250);
 drawClass(person);
 
 /* --------- DISPLAYING ON STAGE --------- */
@@ -575,25 +615,25 @@ mainStage.add(groupLayer);
 mainStage.add(goalLayer);
 
 
-function downloadURI(uri, name) {
-  var link = document.createElement("a");
-  link.download = name;
-  link.href = uri;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  // delete link;
-}
+// function downloadURI(uri, name) {
+//   var link = document.createElement("a");
+//   link.download = name;
+//   link.href = uri;
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+//   // delete link;
+// }
 
-document.getElementById('save').addEventListener('click', function () {
-  var dataURL = mainStage.toDataURL();
-  downloadURI(dataURL, 'stage.png');
-}, false);
+// document.getElementById('save').addEventListener('click', function () {
+//   var dataURL = mainStage.toDataURL();
+//   downloadURI(dataURL, 'stage.png');
+// }, false);
 
-window.onresize = function () {
-  console.log('qq');
-  mainStage.batchDraw();
-}
+// window.onresize = function () {
+//   console.log('qq');
+//   mainStage.batchDraw();
+// }
 
 /* --------- DRAG & DROP --------- */
 
