@@ -121,7 +121,13 @@ const jsonPerson = JSON.parse(`{
                       "remainingTime": 5
                   }
                 ],
-                  "groups" : [ 
+                  "groups" : [
+                    {
+                      "name": "Film Lovers Club",
+                      "picture": "20vekFOX.jpeg",
+                      "goals" : [],
+                      "groups" : []
+                    }, 
                     {
                     "name": "Katalonia",
                     "picture": "freedom.png",
@@ -133,7 +139,14 @@ const jsonPerson = JSON.parse(`{
                         "description": "Now or never. All or nothing."
                       }
                     ],
-                    "groups" : []
+                    "groups" : [
+                      {
+                        "name": "Anime Club",
+                        "picture": "onime.jpeg",
+                        "goals" : [],
+                        "groups" : []
+                      }
+                    ]
                   }
                 ]
               }
@@ -222,13 +235,13 @@ function drawNodeChilds(exemplar, type, node, parentNode, slicedPathArray) {
     switch(type) {
       case 'goals': 
         if (!parentNode.isGoalsDrawn) {
-          drawGoals(exemplar.execute(slicedPathArray), 350, 300);
+          drawGoals(exemplar.execute(slicedPathArray), 350, 350);
           parentNode.isGoalsDrawn = true;
         }
         break;
       case 'groups':
         if (!parentNode.isGroupsDrawn) {
-          drawGroups(exemplar.execute(slicedPathArray), 350, 300);
+          drawGroups(exemplar.execute(slicedPathArray), 350, 350);
           parentNode.isGroupsDrawn = true;
         }
         break;
@@ -309,26 +322,20 @@ class Entity {
     return this.goalsLength + this.groupsLength;
   }
   getSequences() {
-    const groupsSequence = [];
-    const goalsSequence = [];
     const groupsIndexSequence = [];
     const goalsIndexSequence = [];
     if (this.getGoalsLength) {
       switch (this.getGroupsLength) {
         case 0: 
           for (let i = 0; i < this.getGeneralLength(); i++) {
-            goalsSequence.push(1);
             goalsIndexSequence.push(i);
           }
+          break;
         case 1:
           for (let i = 0; i < this.getGeneralLength(); i++) {
             if (i === Math.ceil(this.getGoalsLength / 2)) {
-              groupsSequence.push(1);
-              goalsSequence.push(0);
               groupsIndexSequence.push(i);
             } else {
-              groupsSequence.push(0);
-              goalsSequence.push(1);
               goalsIndexSequence.push(i);
             }
           }
@@ -336,12 +343,8 @@ class Entity {
         case 2: 
           for (let i = 0; i < this.getGeneralLength(); i++) {
             if (i === 0 || i === this.getGeneralLength() - 1) {
-              groupsSequence.push(1);
-              goalsSequence.push(0);
               groupsIndexSequence.push(i);
             } else {
-              groupsSequence.push(0);
-              goalsSequence.push(1);
               goalsIndexSequence.push(i);
             }
           }
@@ -350,12 +353,8 @@ class Entity {
           const intermediateSquaresLength = Math.ceil(this.getGoalsLength / this.getGroupsLength);
           console.log(intermediateSquaresLength);
           for (let i = 0; i < this.getGeneralLength(); i += (intermediateSquaresLength + 1)) {
-            groupsSequence.push(1);
-            goalsSequence.push(0);
             groupsIndexSequence.push(i);
             for (let j = 0; j < intermediateSquaresLength; j++) {
-              groupsSequence.push(0);
-              goalsSequence.push(1);
               goalsIndexSequence.push(i);
             }
           }
@@ -363,8 +362,6 @@ class Entity {
       }
     }
     return {
-      groupsSequence, 
-      goalsSequence,
       groupsIndexSequence,
       goalsIndexSequence 
     }
@@ -447,6 +444,7 @@ console.log(person);
 // document.querySelector('#main-stage').style.height = window.innerHeight - 100;
 document.querySelector('#main-stage').style.overflowX = 'scroll';
 document.querySelector('#main-stage').style.overflowY = 'scroll';
+
 /* --------- STAGE --------- */
 var mainStage = new Konva.Stage({
   container: 'main-stage',
@@ -455,10 +453,10 @@ var mainStage = new Konva.Stage({
 });
 
 /* --------- CREATE ENTITY --------- */
-function createEntity({ positionX, positionY, name, picture }) {
+function createEntity({ positionX, positionY, name, picture, textSide }) {
   const entityGroup = new Konva.Group({
-    x: positionX - 200,
-    y: positionY,
+    x: positionX - 160,
+    y: positionY - 50,
     // draggable: true
   });
   // let firstLetters = '';
@@ -479,8 +477,14 @@ function createEntity({ positionX, positionY, name, picture }) {
     align: 'center'
   });
 
+  let textPositionX = 190;
+  let textAlign = 'left';
+  if (textSide === 'left') {
+    textPositionX = -190;
+    textAlign = 'right';
+  }
   const entityCardText = new Konva.Text({
-    x: 190,
+    x: textPositionX,
     y: 38,
     text: `${name}`, //\n${picture}
     fontSize: 22,
@@ -489,7 +493,7 @@ function createEntity({ positionX, positionY, name, picture }) {
     fill: '#555',
     width: 300,
     padding: 20,
-    align: 'left'
+    align: textAlign
   });
 
   const entityCardBackground = new Konva.Circle({
@@ -594,7 +598,7 @@ backgroundLayer.add(stageBackground);
 /* --------- PERSON ENTITY --------- */
 const personEntity = createEntity({
   positionX: mainStage.getWidth() / 2 -150,
-  positionY: 5,
+  positionY: 30,
   name: person.getName, 
   picture: person.getAvatar,
 });
@@ -625,19 +629,25 @@ function drawGroups(node, offsetX, offsetY) {
       const startX = node.getEntity.attrs.x + (-1) * (node.getGeneralLength() / 2 - 1) * offsetX;
       let currentX =  startX + groupsIndexSequence[index] * offsetX;
       const currentY = node.getEntity.attrs.y + offsetY;
+      let textSide = 'right';
+      console.log('qq', groupsIndexSequence[index], node.getGeneralLength() / 2);
+      if (groupsIndexSequence[index] < node.getGeneralLength() / 2) {
+        textSide = 'left';
+      } 
       const itemGroup = createEntity({
         positionX: currentX,
         positionY: currentY,
         name: item.getName, 
         picture: item.getAvatar,
+        textSide: textSide,
       });
       item.setEntity = itemGroup;
-      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 100, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
+      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 70, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
       groupLayer.add(itemGroup);
     });
   }
 }
-drawGroups(person, 350, 300);
+drawGroups(person, 350, 350);
 // personLayer.add(personEntity);
 
 /* --------- DRAWNING GOALS --------- */
@@ -668,7 +678,7 @@ function drawGoals(node, offsetX, offsetY) {
     });
   }
 }
-drawGoals(person, 350, 300);
+drawGoals(person, 350, 350);
 drawClass(person);
 
 /* --------- DISPLAYING ON STAGE --------- */
