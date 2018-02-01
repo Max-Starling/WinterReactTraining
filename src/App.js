@@ -304,9 +304,54 @@ class Entity {
   }
   get getGoalsLength() {
     return this.goalsLength;
-  }
+  } 
   getGeneralLength() {
     return this.goalsLength + this.groupsLength;
+  }
+  getSequences() {
+    const groupsSequence = [];
+    const goalsSequence = [];
+    if (this.getGoalsLength) {
+      switch (this.getGroupsLength) {
+        case 1:
+          for (let i = 0; i < this.getGeneralLength(); i++) {
+            if (i === Math.ceil(this.getGoalsLength / 2)) {
+              groupsSequence.push(1);
+              goalsSequence.push(0);
+            } else {
+              groupsSequence.push(0);
+              goalsSequence.push(1);
+            }
+          }
+          break;
+        case 2: 
+          for (let i = 0; i < this.getGeneralLength(); i++) {
+            if (i === 0 || i === this.getGeneralLength() - 1) {
+              groupsSequence.push(1);
+              goalsSequence.push(0);
+            } else {
+              groupsSequence.push(0);
+              goalsSequence.push(1);
+            }
+          }
+          break;
+        default: 
+          const intermediateSquaresLength = Math.ceil(this.getGoalsLength / this.getGroupsLength);
+          for (let i = 0; i < this.getGeneralLength(); i += (intermediateSquaresLength + 1)) {
+            groupsSequence.push(1);
+            goalsSequence.push(0);
+            for (let j = 0; j < intermediateSquaresLength; j++) {
+              groupsSequence.push(0);
+              goalsSequence.push(1);
+            }
+          }
+          break;
+      }
+    }
+    return {
+      groupsSequence, 
+      goalsSequence 
+    }
   }
   addGoal(t) {
     this.goals.push(t);
@@ -431,8 +476,6 @@ function createEntity({ positionX, positionY, name, picture }) {
     align: 'left'
   });
 
-  
-  
   const entityCardBackground = new Konva.Circle({
       x: 150,
       y: 70,
@@ -464,7 +507,7 @@ function createGoal({
   const goalGroup = new Konva.Group({
     x: positionX,
     y: positionY,
-    draggable: true,
+    // draggable: true,
   });
 
   const goalCardName = new Konva.Text({
@@ -559,6 +602,7 @@ function drawLine(coordX, coordY, viewX, viewY, strokeWidth = 1) {
 
 /* --------- DRAWNING GROUPS --------- */
 function drawGroups(node, offsetX, offsetY) { 
+  // console.log(node, node.getSequences().groupsSequence);
   if (node.getGroups.length) {
     node.getGroups.forEach((item, index) => {
       const startX = node.getEntity.attrs.x + (-1) * (node.getGeneralLength() / 2 - 1) * offsetX;
@@ -595,7 +639,8 @@ function drawGoals(node, offsetX, offsetY) {
         description: item.getDescription,
       });
       item.setEntity = itemGoal;
-      const line = drawLine(itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
+      //const line = 
+      drawLine(itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
       // itemGoal.on('xChange', (event) => {
       //   line.attrs.points = [itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100];
       //   lineLayer.draw();
