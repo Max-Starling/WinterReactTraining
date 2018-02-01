@@ -133,7 +133,9 @@ function parseJsonToClass(jsonPerson, exemplarPerson) {
       Object.keys(parentNode).forEach((key) => {
           // consider only array keys exept path array (only goals and groups)
           if (parentNode[key] instanceof Array && key !== 'pathArray') {
+            parentNode[`${key}Length`] = 0;
             parentNode[key].forEach((item, i) => {
+              parentNode[`${key}Length`]+=1;
               // copy parent path array or create new path array if it's doesn't exist
               if (parentNode.pathArray) { 
                 item.pathArray = [...parentNode.pathArray];
@@ -148,6 +150,7 @@ function parseJsonToClass(jsonPerson, exemplarPerson) {
               // consider child as parent and repeat
               recursiveTraversal(item, key);
             });
+            console.log('papa', parentNode);
           } 
       });
   })(jsonPerson);
