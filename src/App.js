@@ -50,27 +50,27 @@ const jsonPerson = JSON.parse(`{
   "picture": "krasivo.svg",
   "goals": [
       {
-          "name": "testGoal",
+          "name": "Test Goal",
           "generalProgress": 0.3,
           "remainingTime": 1,
           "description": "It's awesome goal."
       }, {
-          "name": "testGoal #2",
+          "name": "Test Goal #2",
           "generalProgress": 0.7,
           "remainingTime": 3,
           "description": "It's also awesome goal."
       }, {
-          "name": "testGoal №3",
+          "name": "Test Goal №3",
           "generalProgress": 0.5,
           "remainingTime": 2,
           "description": "It's just something awesome."
       }, {
-          "name": "testGoal_4",
+          "name": "Test Goal_4",
           "generalProgress": 0.1,
           "remainingTime": 3,
           "description": "Awesome."
       }, {
-        "name": "testGoal-5",
+        "name": "Test Goal-5",
         "generalProgress": 0.9,
         "remainingTime": 999,
         "description": "Asm."
@@ -100,30 +100,25 @@ const jsonPerson = JSON.parse(`{
                   "picture": "not-found.bmp",
                   "goals": [
                     {
-                        "name": "testGoal",
-                        "generalProgress": 0.3,
-                        "remainingTime": 1,
-                        "description": "It's awesome goal."
-                    }, {
-                        "name": "testGoal #2",
-                        "generalProgress": 0.7,
-                        "remainingTime": 3,
-                        "description": "It's also awesome goal."
-                    }, {
-                        "name": "testGoal №3",
-                        "generalProgress": 0.5,
-                        "remainingTime": 2,
-                        "description": "It's just something awesome."
-                    }, {
-                        "name": "testGoal_4",
+                        "name": "Goal I",
                         "generalProgress": 0.1,
-                        "remainingTime": 3,
-                        "description": "Awesome."
+                        "remainingTime": 1
                     }, {
-                      "name": "testGoal-5",
-                      "generalProgress": 0.9,
-                      "remainingTime": 999,
-                      "description": "Asm."
+                        "name": "Goal II",
+                        "generalProgress": 0.2,
+                        "remainingTime": 2
+                    }, {
+                        "name": "Goal III",
+                        "generalProgress": 0.3,
+                        "remainingTime": 3
+                    }, {
+                        "name": "Goal IV",
+                        "generalProgress": 0.4,
+                        "remainingTime": 3
+                    }, {
+                      "name": "Goal V",
+                      "generalProgress": 0.5,
+                      "remainingTime": 5
                   }
                 ],
                   "groups" : []
@@ -147,6 +142,7 @@ function parseJsonToClass(jsonPerson, exemplarPerson) {
               } 
               // push string information in path array
               item.pathArray.push(`${key}${'_'}${i}`);
+              console.log(item.pathArray);
               // add node to the exemplar
               addNode(exemplarPerson, key, item, item.pathArray.slice(0, -1));
               // consider child as parent and repeat
@@ -341,13 +337,13 @@ class GoalDetail extends GoalPreview {
 }
 
 /* --------- OBJECTS OF CLASSES --------- */
-const person = new Entity('Dan KR', 'krasivo.svg');
+const person = new Entity('Dan Kr', 'krasivo.svg');
 parseJsonToClass(jsonPerson, person);
 
 /* --------- STAGE --------- */
 var mainStage = new Konva.Stage({
   container: 'main-stage',
-  width: window.innerWidth,
+  width: 3000,
   height: 2000,
 });
 
@@ -358,33 +354,56 @@ function createEntity({ positionX, positionY, name, picture }) {
     y: positionY + 50,
     // draggable: true
   });
-
-  const entityCardText = new Konva.Text({
-    text: `${name}\n${picture}`, 
-    fontSize: 18,
+  // let firstLetters = '';
+  // name.split(' ').forEach((item) => {
+  //   console.log(item);
+  //   firstLetters = `${firstLetters}${item[0]}`
+  // })
+  const entityCardLetter = new Konva.Text({
+    x: 118,
+    y: 32,
+    text: `${name[0]}`, //\n${picture}
+    fontSize: 36,
     fontFamily: 'Cambria', //Purisa
+    fontStyle: 'bold',
     fill: '#555',
-    width: 300,
+    // width: 300,
     padding: 20,
     align: 'center'
   });
+
+  const entityCardText = new Konva.Text({
+    x: 190,
+    y: 38,
+    text: `${name}`, //\n${picture}
+    fontSize: 22,
+    fontFamily: 'Cambria', //Purisa
+    fontStyle: 'bold',
+    fill: '#555',
+    width: 300,
+    padding: 20,
+    align: 'left'
+  });
+
+  
   
   const entityCardBackground = new Konva.Circle({
       x: 150,
-      y: 50,
-      stroke: 'f7f7f7',
+      y: 70,
+      // stroke: 'f7f7f7',
       strokeWidth: 0.07,
       fill: '#f7f7f7',
-      // radius: 40,
-      height: entityCardText.getHeight() + 70,
+      radius: 40,
+      // height: entityCardText.getHeight() + 70,
       shadowColor: 'black',
-      shadowBlur: 5,
-      shadowOffset: {x : 2, y : 2},
-      shadowOpacity: 0.5,
+      shadowBlur: 4, //10
+      shadowOffset: {x : 0, y : 1},
+      shadowOpacity: 0.4, // 0.2
     });
 
   entityGroup.add(entityCardBackground);
   entityGroup.add(entityCardText);
+  entityGroup.add(entityCardLetter);
   return entityGroup;
 }
 
@@ -399,14 +418,28 @@ function createGoal({
   const goalGroup = new Konva.Group({
     x: positionX,
     y: positionY,
-    // draggable: true,
+    draggable: true,
   });
-  const goalCardText = new Konva.Text({
+
+  const goalCardName = new Konva.Text({
     x: -150,
     y: -50,
-    text: `${name}\n${generalProgress}\n${remainingTime}\n${description}`, 
-    fontSize: 18,
-    fontFamily: 'Cambria',
+    text: `${name}`, 
+    fontSize: 20,
+    fontFamily: 'NanumGotic',
+    fontStyle: 'bold',
+    fill: '#555',
+    width: 300,
+    padding: 20,
+    align: 'center'
+  });
+  
+  const goalCardText = new Konva.Text({
+    x: -150,
+    y: -30,
+    text: `${description}\n${'Progress: '}${generalProgress * 100}${'%'}\n${remainingTime}${' days left'}`, 
+    fontSize: 20,
+    fontFamily: 'NanumGotic',
     fill: '#555',
     width: 300,
     padding: 20,
@@ -416,18 +449,19 @@ function createGoal({
   const goalCardBackground = new Konva.Rect({
     x: -150,
     y: -50,
-    stroke: 'f7f7f7',
+    // stroke: 'f7f7f7',
     strokeWidth: 0.15,
     fill: '#f7f7f7',
     width: 300,
-    height: goalCardText.getHeight() + 10,
+    height: goalCardText.getHeight() + 30,
     shadowColor: 'black',
-    shadowBlur: 5,
-    shadowOffset: {x : 2, y : 2},
-    shadowOpacity: 0.5,
+    shadowBlur: 4,
+    shadowOffset: {x : 0, y : 2},
+    shadowOpacity: 0.4,
   });
   goalGroup.add(goalCardBackground);
   goalGroup.add(goalCardText);
+  goalGroup.add(goalCardName);
   return goalGroup;
 }
 
@@ -436,6 +470,21 @@ const personLayer = new Konva.Layer();
 const groupLayer = new Konva.Layer();
 const goalLayer = new Konva.Layer();
 const lineLayer = new Konva.Layer();
+const backgroundLayer = new Konva.Layer();
+// const elem = document.querySelector("#main-stage");
+// elem.style.transform = elem.style.WebkitTransform = elem.style.MsTransform = 'scale(0.8)';
+
+/* --------- BACKGROUND --------- */
+const stageBackground = new Konva.Rect({
+  fill: '#e2e1e0',
+  width: mainStage.getWidth(),
+  height: mainStage.getHeight(),
+  shadowColor: '#e2e1e0',
+  shadowBlur: 4,
+  shadowOffset: {x : 0, y : 2},
+  shadowOpacity: 0.4,
+});
+backgroundLayer.add(stageBackground);
 
 /* --------- PERSON ENTITY --------- */
 const personEntity = createEntity({
@@ -449,19 +498,20 @@ person.setEntity = personEntity;
 personLayer.add(personEntity);
 
 /* --------- DRAWNING LINES --------- */
-function drawLine(coordX, coordY, viewX, viewY) {
+function drawLine(coordX, coordY, viewX, viewY, strokeWidth = 1) {
   const linkLine = new Konva.Line({
     points: [coordX, coordY, viewX, viewY],
-    stroke: 'black',
-    strokeWidth: 1,
+    stroke: '#212121',
+    strokeWidth: strokeWidth,
     lineCap: 'round',
     lineJoin: 'round',
-    name: 'link-line'
+    name: 'link-line',
   });
   lineLayer.add(linkLine);
+  return linkLine;
 }
 
-/* --------- DRAWNING GOALS --------- */
+/* --------- DRAWNING GROUPS --------- */
 function drawGroups(node, offsetY) { 
   let deltaGroups = 0;
   if (node.getGroups.length) {
@@ -476,12 +526,13 @@ function drawGroups(node, offsetY) {
         picture: item.getAvatar,
       });
       item.setEntity = itemGroup;
-      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 50, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
+      drawLine(itemGroup.attrs.x + 150, itemGroup.attrs.y + 50, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100, 2);
       groupLayer.add(itemGroup);
     });
   }
 }
 drawGroups(person, 400);
+// personLayer.add(personEntity);
 
 /* --------- DRAWNING GOALS --------- */
 function drawGoals(node, offsetY) { 
@@ -501,8 +552,11 @@ function drawGoals(node, offsetY) {
         description: item.getDescription,
       });
       item.setEntity = itemGoal;
-      drawLine(itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
-      // personLayer.add(node.getEntity);
+      const line = drawLine(itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100);
+      itemGoal.on('xChange', (event) => {
+        line.attrs.points = [itemGoal.attrs.x, itemGoal.attrs.y, node.getEntity.attrs.x + 150, node.getEntity.attrs.y + 100];
+        lineLayer.draw();
+      });
       goalLayer.add(itemGoal);
     });
   }
@@ -511,11 +565,32 @@ drawGoals(person, 250);
 drawClass(person);
 
 /* --------- DISPLAYING ON STAGE --------- */
+mainStage.add(backgroundLayer);
 mainStage.add(lineLayer);
 mainStage.add(personLayer);
 mainStage.add(groupLayer);
 mainStage.add(goalLayer);
 
+
+function downloadURI(uri, name) {
+  var link = document.createElement("a");
+  link.download = name;
+  link.href = uri;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  // delete link;
+}
+
+document.getElementById('save').addEventListener('click', function () {
+  var dataURL = mainStage.toDataURL();
+  downloadURI(dataURL, 'stage.png');
+}, false);
+
+window.onresize = function () {
+  console.log('qq');
+  mainStage.batchDraw();
+}
 
 /* --------- DRAG & DROP --------- */
 
