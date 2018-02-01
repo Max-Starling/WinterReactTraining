@@ -80,11 +80,18 @@ const jsonPerson = JSON.parse(`{
       {
           "name": "English Group",
           "picture": "koroleva_britanii.jpeg",
-          "goals" : [],
+          "goals" : [
+            {
+              "name": "Learn English",
+              "generalProgress": 0.35,
+              "remainingTime": 60,
+              "description": "Read 2-3 times that book."
+            }
+          ],
           "groups" : []
       },
       {
-          "name": "Katalonia",
+          "name": "Japen",
           "picture": "freedom.png",
           "goals" : [
             {
@@ -96,7 +103,7 @@ const jsonPerson = JSON.parse(`{
           ],
           "groups" : [
               {
-                  "name": "Life Sence",
+                  "name": "My dear sequence",
                   "picture": "not-found.bmp",
                   "goals": [
                     {
@@ -123,20 +130,20 @@ const jsonPerson = JSON.parse(`{
                 ],
                   "groups" : [
                     {
-                      "name": "Film Lovers Club",
+                      "name": "Film Haters Club",
                       "picture": "20vekFOX.jpeg",
                       "goals" : [],
                       "groups" : []
                     }, 
                     {
-                    "name": "Katalonia",
+                    "name": "Japen Lovers",
                     "picture": "freedom.png",
                     "goals" : [
                       {
-                        "name": "Break Away Goal",
+                        "name": "Live in Japen",
                         "generalProgress": 0.9,
                         "remainingTime": 25,
-                        "description": "Now or never. All or nothing."
+                        "description": "It's unreal. Nevermind."
                       }
                     ],
                     "groups" : [
@@ -204,7 +211,7 @@ function addNode(exemplar, type, node, slicedPathArray) {
   } 
 }
 
-function drawClass(exemplar) {
+function drawTree(exemplar) {
   (function recursiveTraversal(parentNode, type) {
     Object.keys(parentNode).forEach((key) => {
       // consider only array keys exept path array (only goals and groups)
@@ -231,25 +238,32 @@ function drawClass(exemplar) {
 }
 
 function drawNodeChilds(exemplar, type, node, parentNode, slicedPathArray) {
-  if (slicedPathArray.length) {
     switch(type) {
       case 'goals': 
         if (!parentNode.isGoalsDrawn) {
-          drawGoals(exemplar.execute(slicedPathArray), 350, 350);
+          if (slicedPathArray.length) {
+            drawGoals(exemplar.execute(slicedPathArray), 350, 350);
+          } else {
+            drawGoals(exemplar, 350, 350);
+          }
           parentNode.isGoalsDrawn = true;
         }
         break;
       case 'groups':
         if (!parentNode.isGroupsDrawn) {
-          drawGroups(exemplar.execute(slicedPathArray), 350, 350);
+          if (slicedPathArray.length) {
+            drawGroups(exemplar.execute(slicedPathArray), 350, 350);
+          } else {
+            drawGroups(exemplar, 350, 350);
+          }
           parentNode.isGroupsDrawn = true;
         }
         break;
       default: 
         break;
     }
-  }
 }
+
 
 /* --------- CLASSES --------- */
 class Entity {
@@ -435,6 +449,7 @@ class GoalDetail extends GoalPreview {
   }
 }
 
+
 /* --------- OBJECTS OF CLASSES --------- */
 const person = new Entity('Dan Kr', 'krasivo.svg');
 parseJsonToClass(jsonPerson, person);
@@ -445,12 +460,14 @@ console.log(person);
 document.querySelector('#main-stage').style.overflowX = 'scroll';
 document.querySelector('#main-stage').style.overflowY = 'scroll';
 
+
 /* --------- STAGE --------- */
 var mainStage = new Konva.Stage({
   container: 'main-stage',
   width: 6000,
   height: 1400,
 });
+
 
 /* --------- CREATE ENTITY --------- */
 function createEntity({ positionX, positionY, name, picture, textSide }) {
@@ -516,6 +533,7 @@ function createEntity({ positionX, positionY, name, picture, textSide }) {
   return entityGroup;
 }
 
+
 /* --------- CREATE GOAL --------- */
 function createGoal({ 
                         positionX, 
@@ -574,14 +592,16 @@ function createGoal({
   return goalGroup;
 }
 
+
 /* --------- LAYERS --------- */
-const personLayer = new Konva.Layer();
+const rootLayer = new Konva.Layer();
 const groupLayer = new Konva.Layer();
 const goalLayer = new Konva.Layer();
 const lineLayer = new Konva.Layer();
 const backgroundLayer = new Konva.Layer();
 // const elem = document.querySelector("#main-stage");
-// elem.style.transform = elem.style.WebkitTransform = elem.style.MsTransform = 'scale(0.8)';
+// elem.style.transform = elem.style.WebkitTransform = elem.style.MsTransform = 'scale(0.67)';
+
 
 /* --------- BACKGROUND --------- */
 const stageBackground = new Konva.Rect({
@@ -595,16 +615,29 @@ const stageBackground = new Konva.Rect({
 });
 backgroundLayer.add(stageBackground);
 
-/* --------- PERSON ENTITY --------- */
-const personEntity = createEntity({
-  positionX: mainStage.getWidth() / 2 -150,
-  positionY: 30,
-  name: person.getName, 
-  picture: person.getAvatar,
-});
 
-person.setEntity = personEntity;
-personLayer.add(personEntity);
+/* --------- ROOT ENTITY --------- */
+
+// let rootEntity = createRootEntity (person);
+// drawTree(person);
+
+// rootEntity.remove();
+
+createRootEntity (person.getGroups[1]);
+drawTree(person.getGroups[1]);
+
+function createRootEntity(rootExemplar) {
+  const rootEntity = createEntity({
+    positionX: mainStage.getWidth() / 2 -150,
+    positionY: 30,
+    name: rootExemplar.getName, 
+    picture:rootExemplar.getAvatar,
+  });
+  rootExemplar.setEntity = rootEntity;
+  rootLayer.add(rootEntity);
+  return rootEntity;
+}
+
 
 /* --------- DRAWNING LINES --------- */
 function drawLine(coordX, coordY, viewX, viewY, strokeWidth = 1) {
@@ -619,6 +652,7 @@ function drawLine(coordX, coordY, viewX, viewY, strokeWidth = 1) {
   lineLayer.add(linkLine);
   return linkLine;
 }
+
 
 /* --------- DRAWNING GROUPS --------- */
 function drawGroups(node, offsetX, offsetY) { 
@@ -647,8 +681,7 @@ function drawGroups(node, offsetX, offsetY) {
     });
   }
 }
-drawGroups(person, 350, 350);
-// personLayer.add(personEntity);
+
 
 /* --------- DRAWNING GOALS --------- */
 function drawGoals(node, offsetX, offsetY) { 
@@ -678,13 +711,13 @@ function drawGoals(node, offsetX, offsetY) {
     });
   }
 }
-drawGoals(person, 350, 350);
-drawClass(person);
+
 
 /* --------- DISPLAYING ON STAGE --------- */
 mainStage.add(backgroundLayer);
 mainStage.add(lineLayer);
-mainStage.add(personLayer);
+// mainStage.add(personLayer);
+mainStage.add(rootLayer);
 mainStage.add(groupLayer);
 mainStage.add(goalLayer);
 
