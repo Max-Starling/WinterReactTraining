@@ -158,13 +158,13 @@ function parseJsonToClass(jsonPerson, exemplarPerson) {
               } 
               // push string information in path array
               item.pathArray.push(`${key}${'_'}${i}`);
-              console.log(item.pathArray);
+              // console.log(item.pathArray);
               // add node to the exemplar
               addNode(exemplarPerson, key, item, item.pathArray.slice(0, -1));
               // consider child as parent and repeat
               recursiveTraversal(item, key);
             });
-            console.log('papa', parentNode);
+            // console.log('papa', parentNode);
           } 
       });
   })(jsonPerson);
@@ -311,16 +311,25 @@ class Entity {
   getSequences() {
     const groupsSequence = [];
     const goalsSequence = [];
+    const groupsIndexSequence = [];
+    const goalsIndexSequence = [];
     if (this.getGoalsLength) {
       switch (this.getGroupsLength) {
+        case 0: 
+          for (let i = 0; i < this.getGeneralLength(); i++) {
+            goalsSequence.push(1);
+            goalsIndexSequence.push(i);
+          }
         case 1:
           for (let i = 0; i < this.getGeneralLength(); i++) {
             if (i === Math.ceil(this.getGoalsLength / 2)) {
               groupsSequence.push(1);
               goalsSequence.push(0);
+              groupsIndexSequence.push(i);
             } else {
               groupsSequence.push(0);
               goalsSequence.push(1);
+              goalsIndexSequence.push(i);
             }
           }
           break;
@@ -329,20 +338,25 @@ class Entity {
             if (i === 0 || i === this.getGeneralLength() - 1) {
               groupsSequence.push(1);
               goalsSequence.push(0);
+              groupsIndexSequence.push(i);
             } else {
               groupsSequence.push(0);
               goalsSequence.push(1);
+              goalsIndexSequence.push(i);
             }
           }
           break;
         default: 
           const intermediateSquaresLength = Math.ceil(this.getGoalsLength / this.getGroupsLength);
+          console.log(intermediateSquaresLength);
           for (let i = 0; i < this.getGeneralLength(); i += (intermediateSquaresLength + 1)) {
             groupsSequence.push(1);
             goalsSequence.push(0);
+            groupsIndexSequence.push(i);
             for (let j = 0; j < intermediateSquaresLength; j++) {
               groupsSequence.push(0);
               goalsSequence.push(1);
+              goalsIndexSequence.push(i);
             }
           }
           break;
@@ -350,7 +364,9 @@ class Entity {
     }
     return {
       groupsSequence, 
-      goalsSequence 
+      goalsSequence,
+      groupsIndexSequence,
+      goalsIndexSequence 
     }
   }
   addGoal(t) {
@@ -441,7 +457,7 @@ var mainStage = new Konva.Stage({
 /* --------- CREATE ENTITY --------- */
 function createEntity({ positionX, positionY, name, picture }) {
   const entityGroup = new Konva.Group({
-    x: positionX - 300,
+    x: positionX - 200,
     y: positionY,
     // draggable: true
   });
@@ -602,11 +618,12 @@ function drawLine(coordX, coordY, viewX, viewY, strokeWidth = 1) {
 
 /* --------- DRAWNING GROUPS --------- */
 function drawGroups(node, offsetX, offsetY) { 
-  // console.log(node, node.getSequences().groupsSequence);
+  console.log('group', node.getSequences().groupsIndexSequence);
+  const groupsIndexSequence = node.getSequences().groupsIndexSequence;
   if (node.getGroups.length) {
     node.getGroups.forEach((item, index) => {
       const startX = node.getEntity.attrs.x + (-1) * (node.getGeneralLength() / 2 - 1) * offsetX;
-      let currentX =  startX + (node.getGoalsLength + 1 + index) * offsetX;
+      let currentX =  startX + groupsIndexSequence[index] * offsetX;
       const currentY = node.getEntity.attrs.y + offsetY;
       const itemGroup = createEntity({
         positionX: currentX,
@@ -620,15 +637,17 @@ function drawGroups(node, offsetX, offsetY) {
     });
   }
 }
-drawGroups(person, 350, 250);
+drawGroups(person, 350, 300);
 // personLayer.add(personEntity);
 
 /* --------- DRAWNING GOALS --------- */
 function drawGoals(node, offsetX, offsetY) { 
+  console.log('goal', node.getSequences().groupsSequence);
+  const goalsIndexSequence = node.getSequences().goalsIndexSequence;
   if (node.getGoals.length) {
     node.getGoals.forEach((item, index) => {
       const startX = node.getEntity.attrs.x + (-1) * (node.getGeneralLength() / 2 - 1) * offsetX;
-      let currentX =  startX + index * offsetX;
+      let currentX =  startX + goalsIndexSequence[index] * offsetX;
       const currentY = node.getEntity.attrs.y + offsetY;
       var itemGoal = createGoal({
         positionX: currentX,
@@ -649,7 +668,7 @@ function drawGoals(node, offsetX, offsetY) {
     });
   }
 }
-drawGoals(person, 350, 250);
+drawGoals(person, 350, 300);
 drawClass(person);
 
 /* --------- DISPLAYING ON STAGE --------- */
